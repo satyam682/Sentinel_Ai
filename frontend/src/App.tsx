@@ -8,7 +8,6 @@ import { InteractiveRiskDemo } from "./components/InteractiveRiskDemo";
 import { EnterpriseSecurity } from "./components/EnterpriseSecurity";
 import { ConnectorsGrid } from "./components/ConnectorsGrid";
 import { ComparisonMatrix } from "./components/ComparisonMatrix";
-import { ParticleHeroBanner } from "./components/ParticleHeroBanner";
 import { PricingRoiSection } from "./components/PricingRoiSection";
 import { FaqSection } from "./components/FaqSection";
 import { CtaSection } from "./components/CtaSection";
@@ -22,7 +21,7 @@ export const App: React.FC = () => {
       <Navbar />
 
       <main className="space-y-0 overflow-hidden">
-        {/* 1. Full-Screen 3D Interactive Spline Hero (High-Perf 60fps) */}
+        {/* 1. Full-Screen 60fps Streaming Video Hero */}
         <HeroSection />
 
         {/* 2. Enterprise Trust & Live Metrics Bar */}
@@ -60,28 +59,23 @@ export const App: React.FC = () => {
           <ComparisonMatrix />
         </ScrollReveal>
 
-        {/* 9. Interactive Neural Particle Text Showcase (React Bits) */}
-        <ScrollReveal delay={150}>
-          <ParticleHeroBanner />
-        </ScrollReveal>
-
-        {/* 10. Interactive ROI Calculator & Seat Pricing Tiers */}
+        {/* 9. Interactive ROI Calculator & Seat Pricing Tiers */}
         <ScrollReveal delay={150}>
           <PricingRoiSection />
         </ScrollReveal>
 
-        {/* 11. Frequently Asked Questions Accordion */}
+        {/* 10. Frequently Asked Questions Accordion */}
         <ScrollReveal delay={150}>
           <FaqSection />
         </ScrollReveal>
 
-        {/* 12. High-Converting Pilot Booking CTA */}
+        {/* 11. High-Converting Pilot Booking CTA */}
         <ScrollReveal delay={150}>
           <CtaSection />
         </ScrollReveal>
       </main>
 
-      {/* 13. Full Enterprise Footer */}
+      {/* 12. Full Enterprise Footer */}
       <Footer />
     </div>
   );
