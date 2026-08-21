@@ -15,8 +15,16 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 30;
+          setScrolled((prev) => (prev !== isScrolled ? isScrolled : prev));
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -38,9 +46,9 @@ export const Navbar: React.FC = () => {
     <header className="fixed top-0 left-0 right-0 z-[9999] flex justify-center px-3 sm:px-6 pt-3 sm:pt-4 pointer-events-none transition-all duration-300">
       {/* Permanent Floating Rounded Pill Glassmorphism Navbar */}
       <div
-        className={`w-full max-w-5xl rounded-full transition-all duration-300 pointer-events-auto flex items-center justify-between px-4 sm:px-6 py-2 sm:py-2.5 bg-[#0c0e14]/85 backdrop-blur-2xl border shadow-[0_15px_45px_rgba(0,0,0,0.85),0_0_20px_rgba(16,185,129,0.18)] ${
+        className={`w-full max-w-5xl rounded-full transition-all duration-300 pointer-events-auto flex items-center justify-between px-4 sm:px-6 py-2 sm:py-2.5 bg-[#0c0e14]/90 backdrop-blur-md border shadow-[0_10px_35px_rgba(0,0,0,0.8)] ${
           scrolled
-            ? "border-primary/30 shadow-[0_15px_50px_rgba(0,0,0,0.9),0_0_30px_rgba(16,185,129,0.25)] bg-[#0a0c10]/95"
+            ? "border-primary/30 bg-[#0a0c10]/95"
             : "border-white/15"
         }`}
       >
@@ -53,7 +61,7 @@ export const Navbar: React.FC = () => {
             <img
               src="/logo.png"
               alt="Sentinel AI Logo"
-              className="w-6 h-6 sm:w-7 sm:h-7 object-contain rounded-md drop-shadow-[0_0_10px_rgba(255,100,0,0.4)]"
+              className="w-6 h-6 sm:w-7 sm:h-7 object-contain rounded-md"
             />
             <span className="tracking-tight whitespace-nowrap">
               SENTINEL <span className="text-primary font-extrabold">AI</span>
@@ -80,14 +88,14 @@ export const Navbar: React.FC = () => {
             <Button
               variant="navCta"
               size="sm"
-              className="rounded-full uppercase text-[11px] tracking-wider px-5 h-8 cursor-pointer hover:border-primary/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all font-semibold"
+              className="rounded-full uppercase text-[11px] tracking-wider px-5 h-8 cursor-pointer hover:border-primary/50 transition-all font-semibold"
             >
               Get Quote
             </Button>
           </a>
         </div>
 
-        {/* Mobile Hamburger Toggle (Floating Round Glass Button) */}
+        {/* Mobile Hamburger Toggle */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="lg:hidden text-foreground w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all cursor-pointer"
@@ -99,7 +107,7 @@ export const Navbar: React.FC = () => {
 
       {/* Floating Glassmorphism Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-3 top-[66px] rounded-3xl bg-[#0b0c12]/98 backdrop-blur-2xl p-6 border border-white/20 shadow-[0_25px_70px_rgba(0,0,0,0.95),0_0_30px_rgba(16,185,129,0.15)] flex flex-col gap-4 animate-fade-in z-[9999] pointer-events-auto max-h-[82vh] overflow-y-auto">
+        <div className="lg:hidden fixed inset-x-3 top-[66px] rounded-3xl bg-[#0b0c12]/98 backdrop-blur-xl p-6 border border-white/20 shadow-[0_25px_70px_rgba(0,0,0,0.95)] flex flex-col gap-4 animate-fade-in z-[9999] pointer-events-auto max-h-[82vh] overflow-y-auto">
           <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <div className="flex items-center gap-2">
               <img src="/logo.png" alt="Sentinel AI" className="w-5 h-5 object-contain" />
@@ -137,7 +145,7 @@ export const Navbar: React.FC = () => {
             >
               <Button
                 variant="hero"
-                className="w-full text-xs font-bold uppercase py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                className="w-full text-xs font-bold uppercase py-3.5 rounded-xl flex items-center justify-center gap-2"
               >
                 <Shield className="w-4 h-4" />
                 <span>Request Enterprise Pilot</span>

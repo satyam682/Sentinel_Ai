@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useRef } from "react";
+import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { ArrowDown, Shield, Sparkles, Zap, Lock } from "lucide-react";
 
 // Lazy-load Spline component
@@ -6,25 +6,14 @@ const Spline = lazy(() => import("@splinetool/react-spline"));
 
 export const HeroSection: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
-  const splineWrapperRef = useRef<HTMLDivElement>(null);
+  const [loadSpline, setLoadSpline] = useState(false);
 
-  // High-performance Viewport Observer: completely hide 3D canvas from GPU when scrolled past Hero
+  // Defer Spline load slightly after first paint so initial UI renders instantly at 120 FPS
   useEffect(() => {
-    const handleScroll = () => {
-      const heroHeight = heroRef.current?.offsetHeight || window.innerHeight;
-      const isPastHero = window.scrollY > heroHeight + 50;
-      
-      if (splineWrapperRef.current) {
-        if (isPastHero) {
-          splineWrapperRef.current.style.visibility = "hidden";
-        } else {
-          splineWrapperRef.current.style.visibility = "visible";
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    const timer = setTimeout(() => {
+      setLoadSpline(true);
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -32,27 +21,27 @@ export const HeroSection: React.FC = () => {
       ref={heroRef}
       className="relative min-h-[95vh] sm:min-h-screen flex items-end bg-hero-bg overflow-hidden select-none"
     >
-      {/* 3D Spline Interactive Background - Fully Hardware Optimized */}
-      <div
-        ref={splineWrapperRef}
-        className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden"
-        style={{ transform: "translate3d(0,0,0)", willChange: "transform" }}
-      >
-        <Suspense
-          fallback={
-            <div className="absolute inset-0 bg-hero-bg flex items-center justify-center">
-              <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-            </div>
-          }
-        >
-          <Spline
-            scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
-            className="w-full h-full scale-100 object-cover"
-          />
-        </Suspense>
+      {/* 3D Spline Interactive Background - pointer-events-none ensures 100% native scroll speed */}
+      <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
+        {loadSpline ? (
+          <Suspense
+            fallback={
+              <div className="absolute inset-0 bg-hero-bg flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+              </div>
+            }
+          >
+            <Spline
+              scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
+              className="w-full h-full scale-100 object-cover pointer-events-none"
+            />
+          </Suspense>
+        ) : (
+          <div className="absolute inset-0 bg-hero-bg" />
+        )}
       </div>
 
-      {/* Cyber Gradient Overlays - GPU Accelerated */}
+      {/* Cyber Gradient Overlays */}
       <div className="absolute inset-0 bg-gradient-to-t from-hero-bg via-hero-bg/70 sm:via-hero-bg/40 to-transparent z-[1] pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.06)_0%,transparent_60%)] pointer-events-none z-[1]" />
 
