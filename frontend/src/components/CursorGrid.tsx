@@ -57,6 +57,7 @@ export const CursorGrid: React.FC<CursorGridProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const propsRef = useRef<any>({});
   const wakeRef = useRef<(() => void) | null>(null);
+  const isVisibleRef = useRef<boolean>(true);
 
   propsRef.current = {
     cellSize,
@@ -82,7 +83,7 @@ export const CursorGrid: React.FC<CursorGridProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
     let cols = 0;
     let rows = 0;
@@ -149,6 +150,11 @@ export const CursorGrid: React.FC<CursorGridProps> = ({
     };
 
     const draw = (now: number) => {
+      if (!isVisibleRef.current) {
+        running = false;
+        return;
+      }
+
       const p = propsRef.current;
       const dt = Math.min(now - lastFrame, 50);
       lastFrame = now;
@@ -249,7 +255,7 @@ export const CursorGrid: React.FC<CursorGridProps> = ({
     };
 
     const wake = () => {
-      if (running) return;
+      if (running || !isVisibleRef.current) return;
       running = true;
       lastFrame = performance.now();
       raf = requestAnimationFrame(draw);
@@ -279,6 +285,15 @@ export const CursorGrid: React.FC<CursorGridProps> = ({
       wake();
     });
     ro.observe(container);
+
+    const io = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
+      if (entry.isIntersecting) {
+        wake();
+      }
+    }, { threshold: 0.05 });
+    io.observe(container);
+
     rebuild();
     wake();
 
@@ -288,6 +303,7 @@ export const CursorGrid: React.FC<CursorGridProps> = ({
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      io.disconnect();
       container.removeEventListener('pointermove', onPointerMove as any);
       container.removeEventListener('pointerdown', onPointerDown as any);
     };

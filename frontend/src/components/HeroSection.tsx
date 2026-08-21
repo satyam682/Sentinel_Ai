@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
+import React, { Suspense, lazy, useEffect, useRef } from "react";
 import { ArrowDown, Shield, Sparkles, Zap, Lock } from "lucide-react";
 
 // Lazy-load Spline component
@@ -6,21 +6,25 @@ const Spline = lazy(() => import("@splinetool/react-spline"));
 
 export const HeroSection: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
-  const [isInView, setIsInView] = useState(true);
+  const splineWrapperRef = useRef<HTMLDivElement>(null);
 
+  // High-performance Viewport Observer: completely hide 3D canvas from GPU when scrolled past Hero
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsInView(entry.isIntersecting);
-      },
-      { threshold: 0.05 }
-    );
+    const handleScroll = () => {
+      const heroHeight = heroRef.current?.offsetHeight || window.innerHeight;
+      const isPastHero = window.scrollY > heroHeight + 50;
+      
+      if (splineWrapperRef.current) {
+        if (isPastHero) {
+          splineWrapperRef.current.style.visibility = "hidden";
+        } else {
+          splineWrapperRef.current.style.visibility = "visible";
+        }
+      }
+    };
 
-    if (heroRef.current) {
-      observer.observe(heroRef.current);
-    }
-
-    return () => observer.disconnect();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
@@ -28,27 +32,29 @@ export const HeroSection: React.FC = () => {
       ref={heroRef}
       className="relative min-h-[95vh] sm:min-h-screen flex items-end bg-hero-bg overflow-hidden select-none"
     >
-      {/* 3D Spline Interactive Background */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
-        {isInView && (
-          <Suspense
-            fallback={
-              <div className="absolute inset-0 bg-hero-bg flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-              </div>
-            }
-          >
-            <Spline
-              scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
-              className="w-full h-full scale-100 object-cover"
-            />
-          </Suspense>
-        )}
+      {/* 3D Spline Interactive Background - Fully Hardware Optimized */}
+      <div
+        ref={splineWrapperRef}
+        className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden"
+        style={{ transform: "translate3d(0,0,0)", willChange: "transform" }}
+      >
+        <Suspense
+          fallback={
+            <div className="absolute inset-0 bg-hero-bg flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+            </div>
+          }
+        >
+          <Spline
+            scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
+            className="w-full h-full scale-100 object-cover"
+          />
+        </Suspense>
       </div>
 
-      {/* Cyber Gradient Overlays for High-Contrast Readability */}
+      {/* Cyber Gradient Overlays - GPU Accelerated */}
       <div className="absolute inset-0 bg-gradient-to-t from-hero-bg via-hero-bg/70 sm:via-hero-bg/40 to-transparent z-[1] pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.08)_0%,transparent_60%)] pointer-events-none z-[1]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.06)_0%,transparent_60%)] pointer-events-none z-[1]" />
 
       {/* Bottom-Left Anchored Product Copy Container */}
       <div className="relative z-10 w-full max-w-full sm:max-w-xl lg:max-w-2xl px-5 sm:px-8 md:px-12 pb-10 sm:pb-14 pt-28 sm:pt-36 pointer-events-none">

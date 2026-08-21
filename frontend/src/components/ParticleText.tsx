@@ -117,6 +117,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isVisibleRef = useRef<boolean>(true);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -185,10 +186,15 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
     };
 
     const render = (now: number) => {
+      if (!isVisibleRef.current) {
+        animationFrame = null;
+        return;
+      }
+
       ctx.clearRect(0, 0, width, height);
 
       if (glow && !reducedMotion) {
-        ctx.shadowBlur = particleSize * 3;
+        ctx.shadowBlur = particleSize * 2.5;
         ctx.shadowColor = highlightColor;
       } else {
         ctx.shadowBlur = 0;
@@ -247,7 +253,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
     };
 
     const ensureRenderLoop = () => {
-      if (animationFrame === null) {
+      if (animationFrame === null && isVisibleRef.current) {
         animationFrame = window.requestAnimationFrame(render);
       }
     };
@@ -260,7 +266,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
 
       if (width <= 0 || height <= 0) return;
 
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.max(1, Math.floor(width * dpr));
       canvas.height = Math.max(1, Math.floor(height * dpr));
       canvas.style.width = '100%';
@@ -312,7 +318,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
 
       const imageData = offCtx.getImageData(0, 0, offscreen.width, offscreen.height);
       const targets: { x: number; y: number; alpha: number }[] = [];
-      const step = Math.max(2, Math.floor(density));
+      const step = Math.max(3, Math.floor(density));
 
       for (let y = 0; y < offscreen.height; y += step) {
         for (let x = 0; x < offscreen.width; x += step) {
@@ -327,7 +333,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
         }
       }
 
-      const maxParticles = Math.max(900, Math.min(5200, Math.floor((width * height) / 90)));
+      const maxParticles = Math.max(600, Math.min(2800, Math.floor((width * height) / 120)));
       const stride = Math.max(1, Math.ceil(targets.length / maxParticles));
       const baseRgb = hexToRgb(color);
       const highlightRgb = hexToRgb(highlightColor);
@@ -418,10 +424,21 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
 
     const resizeObserver = new ResizeObserver(queueSample);
     resizeObserver.observe(container);
+
+    // Auto-pause animation when out of viewport
+    const io = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
+      if (entry.isIntersecting) {
+        ensureRenderLoop();
+      }
+    }, { threshold: 0.05 });
+    io.observe(container);
+
     sampleText();
 
     return () => {
       buildId += 1;
+      io.disconnect();
       resizeObserver.disconnect();
       reduceMotionQuery?.removeEventListener('change', handleReduceMotionChange);
       canvas.removeEventListener('pointerenter', handlePointerEnter as any);
